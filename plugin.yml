@@ -1,0 +1,4 @@
+name: "Anki"
+version: 0.1.0-alpha
+api: 2.0.0
+main: 'Anki\Plugin'
