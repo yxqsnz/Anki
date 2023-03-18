@@ -31,8 +31,8 @@ class Login extends Command
             return $msg->sendErrorMessage($this->manager->fmt("login.missingPasswordArgument"));
         }
 
-        $nick = $sender->getPlayer()->getName();
-
+        $nick = $sender->getName();
+        $sender->getAddress();
         if ($this->manager->players->isPlayerAuthenticated($nick)) {
             return $msg->sendErrorMessage($this->manager->fmt("login.alreadyAuthenticated"));
         }

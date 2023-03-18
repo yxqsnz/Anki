@@ -3,12 +3,13 @@
 namespace Anki\Data;
 
 use pocketmine\Player;
+use pocketmine\Server;
 
 class ManagedPlayer
 {
-  private ?DatabasePlayer $dbPlayer;
   private Manager $manager;
   public string $nick;
+  public ?DatabasePlayer $dbPlayer;
   public bool $isAuthenticated = false;
   public bool $isRegistred = false;
 
@@ -20,13 +21,17 @@ class ManagedPlayer
     $this->isRegistred = $this->dbPlayer !== null;
   }
 
-  public function register(string $password)
+
+  public function register(Player $player, string $password)
   {
     if ($this->isRegistred) {
       throw new \Exception("Player is already registred!");
     }
 
-    $this->manager->data->addPlayer($this->nick, $password);
+    $regTime = time();
+    $expire = $regTime + mktime(2);
+    $dbPlayer = new DatabasePlayer($player->getName(), $password, $player->getAddress(), $regTime, $expire, $regTime);
+    $this->manager->data->addPlayer($dbPlayer);
     $this->isRegistred = true;
     $this->isAuthenticated = true;
     $this->dbPlayer = $this->manager->data->getPlayer($this->nick);
@@ -42,6 +47,8 @@ class ManagedPlayer
 
     if ($res) {
       $this->isAuthenticated = true;
+      $this->dbPlayer->lastLogin = time();
+      $this->dbPlayer->loginExpire = time() + mktime(2);
     }
 
     return $res;
@@ -117,7 +124,7 @@ class PlayerManager
     $managedPlayer = $this->findPlayer($player->getName());
 
     if ($managedPlayer !== null) {
-      return $managedPlayer->register($password);
+      return $managedPlayer->register($player, $password);
     }
   }
 
@@ -126,7 +133,13 @@ class PlayerManager
     $managedPlayer = $this->findPlayer($player->getName());
 
     if ($managedPlayer !== null) {
-      return $managedPlayer->login($password);
+      $res = $managedPlayer->login($password);
+
+      if ($res) {
+        $this->manager->data->updatePlayer($managedPlayer->dbPlayer);
+      }
+
+      return $res;
     }
 
     return null;

@@ -29,18 +29,28 @@ class SQLite3Provider implements DataProvider
     }
 
 
-    public function addPlayer(string $nick, string $password)
+    public function addPlayer(DatabasePlayer $player): void
     {
-        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $hash = password_hash($player->password, PASSWORD_BCRYPT);
 
-        $stmt = $this->db->prepare("INSERT INTO players (name, password) VALUES (:name, :password)");
-        $stmt->bindValue(":name", $this->sanitize($nick), SQLITE3_TEXT);
+        $stmt = $this->db->prepare("INSERT INTO players (name, password, lastIP, lastLogin, loginExpire, createdOn)
+                                    VALUES (:name, :password, :lastIP, :lastLogin, :loginExpire,
+                                            :createdOn)");
+
+
+        $stmt->bindValue(":name", $this->sanitize($player->name), SQLITE3_TEXT);
         $stmt->bindValue(":password", $hash, SQLITE3_TEXT);
+        $stmt->bindValue(":lastIP", $player->lastIP, SQLITE3_TEXT);
+
+        $stmt->bindValue(":lastLogin", $player->lastLogin, SQLITE3_NUM);
+        $stmt->bindValue(":loginExpire", $player->loginExpire, SQLITE3_NUM);
+        $stmt->bindValue(":createdOn", $player->createdOn, SQLITE3_NUM);
+
         $stmt->execute();
         $stmt->close();
     }
 
-    public function getPlayer(string $nick): DatabasePlayer|null
+    public function getPlayer(string $nick): ?DatabasePlayer
     {
         $stmt = $this->db->prepare("SELECT * FROM players where name = :name");
         $stmt->bindValue(":name", $this->sanitize($nick), SQLITE3_TEXT);
@@ -52,11 +62,35 @@ class SQLite3Provider implements DataProvider
             $stmt->close();
 
             if ($data) {
-                return new DatabasePlayer($nick, $data["password"]);
+                return new DatabasePlayer($nick, $data["password"], $data["lastIP"], $data["lastLogin"], $data["loginExpire"], $data["createdOn"]);
             }
         }
 
         return null;
+    }
+
+    public function updatePlayer(DatabasePlayer $player): void
+    {
+        $hash = password_hash($player->password, PASSWORD_BCRYPT);
+
+        $stmt = $this->db->prepare("UPDATE FROM players 
+                                    SET name = :name,
+                                        password = :password, 
+                                        loginIP = :loginIP,
+                                        lastLogin = :lastLogin
+                                        loginExpire = :loginExpire,
+                                        createdOn = :createdOn
+                                    WHERE name = :name");
+
+        $stmt->bindValue(":name", $this->sanitize($player->name), SQLITE3_TEXT);
+        $stmt->bindValue(":password", $hash, SQLITE3_TEXT);
+        $stmt->bindValue(":lastIP", $player->lastIP, SQLITE3_NUM);
+        $stmt->bindValue(":lastLogin", $player->lastLogin, SQLITE3_NUM);
+        $stmt->bindValue(":loginExpire", $player->loginExpire, SQLITE3_NUM);
+        $stmt->bindValue(":createdOn", $player->createdOn, SQLITE3_NUM);
+
+        $stmt->execute();
+        $stmt->close();
     }
 
     public function playerExists(string $nick): bool
