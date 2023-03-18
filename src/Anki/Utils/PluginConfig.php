@@ -2,8 +2,11 @@
 
 namespace Anki\Utils;
 
+use Anki\Data\Manager;
+use Anki\Plugin;
 use Anki\Provider\DataProvider;
 use Anki\Provider\SQLite3Provider;
+use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
 
 class PluginConfig
@@ -20,10 +23,10 @@ class PluginConfig
         ]);
     }
 
-    public function openDataProvider(): DataProvider
+    public function openDataProvider(PluginBase $plugin): DataProvider
     {
         $provider = match ($this->config->getNested("database.kind")) {
-            "sqlite3" => new SQLite3Provider($this->config->getNested("database.path")),
+            "sqlite3" => new SQLite3Provider($this->config->getNested("database.path"), $plugin),
             default => throw new \Exception("database.kind: Invalid database type.")
         };
 

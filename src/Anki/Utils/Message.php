@@ -17,4 +17,9 @@ class Message
     {
         $this->player->sendMessage("§c/!\ Erro! " . $message);
     }
+
+    public function sendOkMessage(string $message)
+    {
+        $this->player->sendMessage("§a" . $message);
+    }
 }

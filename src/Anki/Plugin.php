@@ -9,26 +9,24 @@ use pocketmine\plugin\PluginBase;
 
 class Plugin extends PluginBase
 {
-  function getDatabasePath(): string
-  {
-    $location = $this->getDataFolder() . "Anki.db";
+  private Manager $manager;
 
-    if (!is_dir($this->getDataFolder())) {
-      mkdir($this->getDataFolder());
-    }
 
-    return $location;
-  }
 
   function onEnable()
   {
-    $dbPath = $this->getDatabasePath();
+    $dbPath = $this->getDataFolder() . "Anki.db";
     $config = new PluginConfig($this->getDataFolder() . "config.yml", $dbPath);
-    $dbProvider = $config->openDataProvider();
-    $manager = new Manager($dbProvider);
+    $dbProvider = $config->openDataProvider($this);
+    $this->manager = new Manager($this, $dbProvider);
 
     $this->getLogger()->info("Starting... ");
     $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
-    $this->getServer()->getCommandMap()->register("anki", new Register());
+    $this->getServer()->getCommandMap()->register("anki", new Register($this->manager));
+  }
+
+  function onDisable()
+  {
+    $this->manager->close();
   }
 }
