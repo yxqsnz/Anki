@@ -11,11 +11,11 @@ use pocketmine\Player;
 
 class Login extends Command
 {
-    private PlayerManager $manager;
+    private Manager $manager;
 
     public function __construct(Manager $manager)
     {
-        $this->manager = $manager->players;
+        $this->manager = $manager;
         parent::__construct("login", "Loga no servidor", "/login <SENHA>", ["logar"]);
     }
 
@@ -28,25 +28,25 @@ class Login extends Command
         }
 
         if (!isset($args[0])) {
-            return $msg->sendErrorMessage("Você precisa botar uma senha como argumento!");
+            return $msg->sendErrorMessage($this->manager->fmt("login.missingPasswordArgument"));
         }
 
         $nick = $sender->getPlayer()->getName();
 
-        if ($this->manager->isPlayerAuthenticated($nick)) {
-            return $msg->sendErrorMessage("Você já está autenticado.");
+        if ($this->manager->players->isPlayerAuthenticated($nick)) {
+            return $msg->sendErrorMessage($this->manager->fmt("login.alreadyAuthenticated"));
         }
 
         $password = $args[0];
 
-        if (!$this->manager->isPlayerRegistred($nick)) {
-            return $msg->sendErrorMessage("Você não está registrado!");
+        if (!$this->manager->players->isPlayerRegistred($nick)) {
+            return $msg->sendErrorMessage($this->manager->fmt("login.notRegistred"));
         }
 
-        if ($this->manager->login($nick, $password) === true) {
-            $msg->sendOkMessage("Você se logou com sucesso! Bom jogo!");
+        if ($this->manager->players->login($sender, $password) === true) {
+            $msg->sendOkMessage($this->manager->fmt("login.success"));
         } else {
-            $msg->sendErrorMessage("Senha incorreta. Tente Novamente!");
+            $msg->sendErrorMessage($this->manager->fmt("login.incorrectPassword"));
         }
     }
 }

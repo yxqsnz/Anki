@@ -16,16 +16,20 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\Player;
+use pocketmine\Server;
 
 class EventListener implements Listener
 {
   private Manager $manager;
+  private Server $server;
 
-  public function __construct(Manager $manager)
+  public function __construct(Server $server, Manager $manager)
   {
     $this->manager = $manager;
+    $this->server = $server;
   }
 
   private function isPlayerAuth(Player $player)
@@ -33,17 +37,38 @@ class EventListener implements Listener
     return $this->manager->players->isPlayerAuthenticated($player->getName());
   }
 
-  #[EventHandler()]
+  #[EventHandler(priority: EventPriority::MONITOR)]
   public function onPlayerJoin(PlayerJoinEvent $event)
   {
+    if ($this->isPlayerAuth($event->getPlayer())) {
+      return;
+    }
+
     $this->manager->players->addPlayer($event->getPlayer());
-    $event->getPlayer()->sendMessage("Olá, use §2/login <SENHA>§f ou §2/register <SENHA>§f para entrar no servidor.");
+    $event->getPlayer()->sendMessage($this->manager->fmt("welcome.message"));
   }
 
-  #[EventHandler()]
+  #[EventHandler(priority: EventPriority::HIGHEST)]
+  public function onPlayerPreLogin(PlayerPreLoginEvent $event)
+  {
+    $player = $event->getPlayer();
+    foreach ($this->server->getOnlinePlayers() as $onlinePlayer) {
+      if ($player !== $onlinePlayer) {
+        if ($this->isPlayerAuth($player)) {
+          $event->setCancelled(true);
+          $player->kick($this->manager->fmt("kick.alreadyLoggedIn", $player->getName()), false);
+          return;
+        }
+      }
+    }
+  }
+
+  #[EventHandler(priority: EventPriority::MONITOR)]
   public function onPlayerQuit(PlayerQuitEvent $event)
   {
-    $this->manager->players->closePlayer($event->getPlayer());
+    if ($event->getPlayer()->loggedIn) {
+      $this->manager->players->closePlayer($event->getPlayer());
+    }
   }
 
   #[EventHandler(priority: EventPriority::MONITOR)]
@@ -94,6 +119,7 @@ class EventListener implements Listener
       $event->setCancelled(true);
     }
   }
+
   #[EventHandler(priority: EventPriority::MONITOR)]
   public function onBlockPlace(BlockPlaceEvent $event)
   {

@@ -19,8 +19,8 @@ class Plugin extends PluginBase
     $dbPath = $this->getDataFolder() . "Anki.db";
     $config = new PluginConfig($this->getDataFolder() . "config.yml", $dbPath);
     $dbProvider = $config->openDataProvider($this);
-    $this->manager = new Manager($this, $dbProvider);
-    $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->manager), $this);
+    $this->manager = new Manager($this, $config->getCustomMessages(), $dbProvider);
+    $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->getServer(), $this->manager), $this);
     $cmdMap = $this->getServer()->getCommandMap();
 
     $cmdMap->register("anki::register", new Register($this->manager));

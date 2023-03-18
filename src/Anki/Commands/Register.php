@@ -11,11 +11,11 @@ use pocketmine\Player;
 
 class Register extends Command
 {
-  private PlayerManager $manager;
+  private Manager $manager;
 
   public function __construct(Manager $manager)
   {
-    $this->manager = $manager->players;
+    $this->manager = $manager;
     parent::__construct("register", "Registra uma conta", "/register <SENHA>", ["registrar"]);
   }
 
@@ -33,17 +33,17 @@ class Register extends Command
 
     $nick = $sender->getPlayer()->getName();
 
-    if ($this->manager->isPlayerAuthenticated($nick)) {
-      return $msg->sendErrorMessage("Você já está autenticado.");
+    if ($this->manager->players->isPlayerAuthenticated($nick)) {
+      return $msg->sendErrorMessage($this->manager->fmt("register.alreadyAuthenticated"));
     }
 
     $password = $args[0];
 
-    if ($this->manager->isPlayerRegistred($nick)) {
-      return $msg->sendErrorMessage("Você já está registrado!");
+    if ($this->manager->players->isPlayerRegistred($nick)) {
+      return $msg->sendErrorMessage($this->manager->fmt("register.alreadyRegistred"));
     }
 
-    $this->manager->register($nick, $password);
-    $msg->sendOkMessage("Você se registrou com sucesso! Bom jogo!");
+    $this->manager->players->register($sender, $password);
+    $msg->sendOkMessage($this->manager->fmt("register.success"));
   }
 }

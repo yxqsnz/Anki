@@ -12,7 +12,7 @@ class ManagedPlayer
   public bool $isAuthenticated = false;
   public bool $isRegistred = false;
 
-  public function __construct(string $nick, Manager $manager)
+  public function __construct(string $nick,  Manager $manager)
   {
     $this->manager = $manager;
     $this->nick = $nick;
@@ -83,6 +83,7 @@ class PlayerManager
     $managedPlayer = $this->findPlayer($player->getName());
     if ($managedPlayer !== null) {
       $idx = array_search($managedPlayer, $this->players);
+
       unset($this->players[$idx]);
     }
   }
@@ -111,18 +112,18 @@ class PlayerManager
     return null;
   }
 
-  public function register(string $nick, string $password)
+  public function register(Player $player, string $password)
   {
-    $managedPlayer = $this->findPlayer($nick);
+    $managedPlayer = $this->findPlayer($player->getName());
 
     if ($managedPlayer !== null) {
       return $managedPlayer->register($password);
     }
   }
 
-  public function login(string $nick, string $password): ?bool
+  public function login(Player $player, string $password): ?bool
   {
-    $managedPlayer = $this->findPlayer($nick);
+    $managedPlayer = $this->findPlayer($player->getName());
 
     if ($managedPlayer !== null) {
       return $managedPlayer->login($password);
