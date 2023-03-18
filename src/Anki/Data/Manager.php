@@ -8,7 +8,7 @@ use Anki\Provider\DataProvider;
 
 class Manager
 {
-    public PlayerManager $playerManager;
+    public PlayerManager $players;
     public DataProvider $data;
     public Plugin       $plugin;
 
@@ -16,7 +16,7 @@ class Manager
     {
         $this->data = $data;
         $this->plugin = $plugin;
-        $this->playerManager = new PlayerManager($this);
+        $this->players = new PlayerManager($this);
     }
 
     public function close()

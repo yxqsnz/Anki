@@ -20,7 +20,7 @@ class Plugin extends PluginBase
     $config = new PluginConfig($this->getDataFolder() . "config.yml", $dbPath);
     $dbProvider = $config->openDataProvider($this);
     $this->manager = new Manager($this, $dbProvider);
-    $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
+    $this->getServer()->getPluginManager()->registerEvents(new EventListener($this->manager), $this);
     $cmdMap = $this->getServer()->getCommandMap();
 
     $cmdMap->register("anki::register", new Register($this->manager));
