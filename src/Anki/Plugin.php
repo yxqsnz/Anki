@@ -2,6 +2,7 @@
 
 namespace Anki;
 
+use Anki\Commands\Login;
 use Anki\Commands\Register;
 use Anki\Data\Manager;
 use Anki\Utils\PluginConfig;
@@ -19,10 +20,11 @@ class Plugin extends PluginBase
     $config = new PluginConfig($this->getDataFolder() . "config.yml", $dbPath);
     $dbProvider = $config->openDataProvider($this);
     $this->manager = new Manager($this, $dbProvider);
-
-    $this->getLogger()->info("Starting... ");
     $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
-    $this->getServer()->getCommandMap()->register("anki", new Register($this->manager));
+    $cmdMap = $this->getServer()->getCommandMap();
+
+    $cmdMap->register("anki::register", new Register($this->manager));
+    $cmdMap->register("anki::login", new Login($this->manager));
   }
 
   function onDisable()
