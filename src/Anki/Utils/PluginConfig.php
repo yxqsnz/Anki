@@ -25,7 +25,7 @@ class PluginConfig
 
                 "welcome" => [
                     "message" => "Seja bem vindo, use §2/logar <SENHA>§f ou §2/registrar <SENHA>§f para entrar no servidor.",
-                    "loggedByIP" => "§aSeja bem vindo, você foi logado automaticamente pelo seu enderesso de IP."
+                    "loggedByIP" => "§aSeja bem vindo, você foi logado automaticamente pelo seu IP."
                 ],
 
                 "login" => [

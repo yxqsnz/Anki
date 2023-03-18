@@ -29,7 +29,7 @@ class ManagedPlayer
     }
 
     $regTime = time();
-    $expire = $regTime + mktime(2);
+    $expire = $regTime + (2 * 60 * 60);
     $dbPlayer = new DatabasePlayer($player->getName(), $password, $player->getAddress(), $regTime, $expire, $regTime);
     $this->manager->data->addPlayer($dbPlayer);
     $this->isRegistred = true;
@@ -48,7 +48,7 @@ class ManagedPlayer
     if ($res) {
       $this->isAuthenticated = true;
       $this->dbPlayer->lastLogin = time();
-      $this->dbPlayer->loginExpire = time() + mktime(2);
+      $this->dbPlayer->loginExpire = time() + (2 * 60 * 60);
     }
 
     return $res;
@@ -151,7 +151,7 @@ class PlayerManager
 
     if ($managedPlayer !== null && $managedPlayer->dbPlayer !== null) {
       $auth = ($managedPlayer->dbPlayer->lastIP == $player->getAddress()
-        && $managedPlayer->dbPlayer->lastLogin < $managedPlayer->dbPlayer->loginExpire
+        && time() <= $managedPlayer->dbPlayer->loginExpire
       );
 
       $managedPlayer->isAuthenticated = $auth;
