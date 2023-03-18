@@ -40,12 +40,18 @@ class EventListener implements Listener
   #[EventHandler(priority: EventPriority::MONITOR)]
   public function onPlayerJoin(PlayerJoinEvent $event)
   {
-    if ($this->isPlayerAuth($event->getPlayer())) {
+    $player = $event->getPlayer();
+    if ($this->isPlayerAuth($player)) {
       return;
     }
 
-    $this->manager->players->addPlayer($event->getPlayer());
-    $event->getPlayer()->sendMessage($this->manager->fmt("welcome.message"));
+    $this->manager->players->addPlayer($player);
+
+    if ($this->manager->players->tryLoginByIP($player)) {
+      $player->sendMessage($this->manager->fmt("welcome.loggedByIP"));
+    } else {
+      $player->sendMessage($this->manager->fmt("welcome.message"));
+    }
   }
 
   #[EventHandler(priority: EventPriority::HIGHEST)]

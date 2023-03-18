@@ -144,4 +144,20 @@ class PlayerManager
 
     return null;
   }
+
+  public function tryLoginByIP(Player $player): bool
+  {
+    $managedPlayer = $this->findPlayer($player->getName());
+
+    if ($managedPlayer !== null && $managedPlayer->dbPlayer !== null) {
+      $auth = ($managedPlayer->dbPlayer->lastIP == $player->getAddress()
+        && $managedPlayer->dbPlayer->lastLogin < $managedPlayer->dbPlayer->loginExpire
+      );
+
+      $managedPlayer->isAuthenticated = $auth;
+      return $auth;
+    }
+
+    return false;
+  }
 }
