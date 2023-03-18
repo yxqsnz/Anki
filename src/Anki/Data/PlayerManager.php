@@ -38,7 +38,6 @@ class ManagedPlayer
       throw new \Exception("Player is not registred!");
     }
 
-
     $res = password_verify($password, $this->dbPlayer->password);
 
     if ($res) {
