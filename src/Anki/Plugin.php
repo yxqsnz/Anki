@@ -12,10 +12,12 @@ class Plugin extends PluginBase
 {
   private Manager $manager;
 
-
-
   function onEnable()
   {
+    if (!is_dir($this->getDataFolder())) {
+      mkdir($this->getDataFolder());
+    }
+
     $dbPath = $this->getDataFolder() . "Anki.db";
     $config = new PluginConfig($this->getDataFolder() . "config.yml", $dbPath);
     $dbProvider = $config->openDataProvider($this);
